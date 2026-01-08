@@ -2,6 +2,7 @@ package queries
 
 import (
 	"context"
+	"sync"
 
 	"library-system/internal/domain/catalog"
 )
@@ -58,14 +59,31 @@ func (h *ListBooksHandler) Handle(ctx context.Context, query ListBooksQuery) (Li
 		offset = 0
 	}
 
-	books, err := h.repo.List(ctx, limit, offset)
-	if err != nil {
-		return ListBooksResult{}, err
-	}
+	// Run List and Count in parallel
+	var books []*catalog.Book
+	var total int
+	var listErr, countErr error
 
-	total, err := h.repo.Count(ctx)
-	if err != nil {
-		return ListBooksResult{}, err
+	var wg sync.WaitGroup
+	wg.Add(2)
+
+	go func() {
+		defer wg.Done()
+		books, listErr = h.repo.List(ctx, limit, offset)
+	}()
+
+	go func() {
+		defer wg.Done()
+		total, countErr = h.repo.Count(ctx)
+	}()
+
+	wg.Wait()
+
+	if listErr != nil {
+		return ListBooksResult{}, listErr
+	}
+	if countErr != nil {
+		return ListBooksResult{}, countErr
 	}
 
 	summaries := make([]BookSummary, len(books))
