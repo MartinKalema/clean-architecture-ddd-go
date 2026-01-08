@@ -85,8 +85,3 @@ func newPool(ctx context.Context, connString string, minConns, maxConns int32) (
 	}
 	return pool, nil
 }
-
-// NewPostgresPool creates a single PostgreSQL connection pool (for backwards compatibility).
-func NewPostgresPool(ctx context.Context, connString string) (*pgxpool.Pool, error) {
-	return newPool(ctx, connString, 100, 150)
-}
