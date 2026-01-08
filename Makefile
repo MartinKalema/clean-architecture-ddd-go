@@ -73,21 +73,24 @@ lint: ## Run linter
 # =============================================================================
 
 .PHONY: db-start
-db-start: ## Start PostgreSQL with Docker
-	docker-compose up -d postgres
-	@echo "$(YELLOW)Waiting for PostgreSQL to be ready...$(NC)"
-	@sleep 3
-	@echo "$(GREEN)PostgreSQL is ready!$(NC)"
+db-start: ## Start PostgreSQL (primary + 2 replicas)
+	docker-compose up -d postgres-primary postgres-replica-1 postgres-replica-2
+	@echo "$(YELLOW)Waiting for PostgreSQL cluster to be ready...$(NC)"
+	@sleep 10
+	@echo "$(GREEN)PostgreSQL cluster is ready!$(NC)"
+	@echo "  Primary:   localhost:5432"
+	@echo "  Replica 1: localhost:5433"
+	@echo "  Replica 2: localhost:5434"
 
 .PHONY: db-stop
-db-stop: ## Stop PostgreSQL
+db-stop: ## Stop PostgreSQL cluster
 	docker-compose down
 
 .PHONY: db-reset
 db-reset: ## Reset database (drop and recreate)
 	docker-compose down -v
-	docker-compose up -d postgres
-	@sleep 3
+	docker-compose up -d postgres-primary postgres-replica-1 postgres-replica-2
+	@sleep 10
 	@make migrate-up
 
 # =============================================================================
