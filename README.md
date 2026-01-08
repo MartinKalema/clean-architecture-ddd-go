@@ -205,8 +205,10 @@ Load tests use [k6](https://k6.io/) with a web dashboard at `http://localhost:56
 | Test | VUs | Throughput | p95 Latency | Error Rate |
 |------|-----|------------|-------------|------------|
 | Smoke | 1 | ~10 req/s | < 50ms | 0% |
-| Load | 1,000 | ~876 req/s | 1.37s | 0% |
+| Load | 1,000 | ~448 req/s | 3.08s | 0% |
 | Stress | 10,000 | ~1,328 req/s | 12.89s | 0.76% |
+
+**Note:** Load test p95 targets should be measured under expected production load (Load test), not extreme conditions (Stress test).
 
 ### Industry Standard p95 Latency Targets
 
