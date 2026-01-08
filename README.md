@@ -198,6 +198,55 @@ make load-stress
 
 Load tests use [k6](https://k6.io/) with a web dashboard at `http://localhost:5665`.
 
+### Load Testing Results
+
+**Test Environment:** PostgreSQL cluster (1 primary + 2 replicas) with synchronous replication.
+
+| Test | VUs | Throughput | p95 Latency | Error Rate |
+|------|-----|------------|-------------|------------|
+| Smoke | 1 | ~10 req/s | < 50ms | 0% |
+| Load | 1,000 | ~876 req/s | 1.37s | 0% |
+| Stress | 10,000 | ~1,328 req/s | 12.89s | 0.76% |
+
+### Industry Standard p95 Latency Targets
+
+| Application Type | p95 Target | p99 Target |
+|------------------|------------|------------|
+| Real-time trading | < 10ms | < 50ms |
+| Search engines | < 200ms | < 500ms |
+| E-commerce checkout | < 500ms | < 1s |
+| Standard web APIs | < 500ms - 1s | < 2s |
+| Internal tools | < 2s | < 5s |
+
+**Latency Guidelines:**
+- **< 500ms** - Excellent
+- **< 1s** - Good
+- **< 2s** - Acceptable
+- **> 3s** - Needs optimization
+
+### Database Replication
+
+The system uses PostgreSQL synchronous replication for **read-your-writes consistency**:
+
+```
+Write Request
+     │
+     ▼
+  Primary ────────▶ Replica (sync)
+     │                   │
+     │              Confirmed
+     │◀──────────────────┘
+     │
+     ▼
+  ACK to client
+```
+
+**Configuration:**
+- `POSTGRESQL_SYNCHRONOUS_COMMIT_MODE: "on"` - Writes wait for replica confirmation
+- `POSTGRESQL_NUM_SYNCHRONOUS_REPLICAS: 1` - At least 1 replica must confirm
+
+**Trade-off:** Higher write latency in exchange for strong consistency (no stale reads).
+
 ## Configuration
 
 Environment variables:
