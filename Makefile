@@ -139,7 +139,7 @@ load-smoke: ## Run smoke test (1 user, 10s)
 	K6_WEB_DASHBOARD=true k6 run tests/load/smoke.js
 
 .PHONY: load-test
-load-test: ## Run load test (up to 1000 users)
+load-test: ## Run load test (up to 5000 users)
 	K6_WEB_DASHBOARD=true k6 run tests/load/load.js
 
 .PHONY: load-stress

@@ -2,14 +2,14 @@
  * Load Test
  *
  * Simulates normal and peak traffic patterns.
- * Ramps up to 1000 concurrent users.
+ * Ramps up to 5000 concurrent users.
  *
  * Stages:
- *   1. Warm up: 0 → 100 users
- *   2. Normal load: 100 → 500 users
- *   3. Peak load: 500 → 1000 users
- *   4. Sustain peak: hold at 1000 users
- *   5. Cool down: 1000 → 0 users
+ *   1. Warm up: 0 → 500 users
+ *   2. Normal load: 500 → 2000 users
+ *   3. Peak load: 2000 → 5000 users
+ *   4. Sustain peak: hold at 5000 users
+ *   5. Cool down: 5000 → 0 users
  *
  * Usage:
  *   k6 run tests/load/load.js
@@ -30,12 +30,12 @@ const getBookTrend = new Trend('get_book_duration');
 
 export const options = {
   stages: [
-    { duration: '1m', target: 100 },   // Warm up to 100 users
-    { duration: '2m', target: 100 },   // Stay at 100 users
-    { duration: '1m', target: 500 },   // Ramp to 500 users
-    { duration: '3m', target: 500 },   // Stay at 500 users
-    { duration: '1m', target: 1000 },  // Ramp to 1000 users
-    { duration: '3m', target: 1000 },  // Stay at 1000 users (peak)
+    { duration: '1m', target: 500 },   // Warm up to 500 users
+    { duration: '2m', target: 500 },   // Stay at 500 users
+    { duration: '1m', target: 2000 },  // Ramp to 2000 users
+    { duration: '3m', target: 2000 },  // Stay at 2000 users
+    { duration: '1m', target: 5000 },  // Ramp to 5000 users
+    { duration: '3m', target: 5000 },  // Stay at 5000 users (peak)
     { duration: '1m', target: 0 },     // Cool down
   ],
   thresholds: {
