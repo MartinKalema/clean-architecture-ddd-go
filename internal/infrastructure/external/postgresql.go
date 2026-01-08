@@ -25,7 +25,7 @@ func NewDBCluster(ctx context.Context, primaryURL string, replicaURLs []string) 
 
 	var replicas []*pgxpool.Pool
 	for i, url := range replicaURLs {
-		replica, err := newPool(ctx, url, 50, 100)
+		replica, err := newPool(ctx, url, 200, 300)
 		if err != nil {
 			// Close already created pools
 			primary.Close()
