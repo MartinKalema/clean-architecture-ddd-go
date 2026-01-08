@@ -130,8 +130,8 @@ func TestBook_Borrow_Success(t *testing.T) {
 
 func TestBook_Borrow_AlreadyBorrowed(t *testing.T) {
 	book := createTestBook()
-	book.Borrow("john@example.com", time.Now())
-	
+	_ = book.Borrow("john@example.com", time.Now())
+
 	err := book.Borrow("jane@example.com", time.Now())
 	
 	if err != ErrBookAlreadyBorrowed {
@@ -151,7 +151,7 @@ func TestBook_Borrow_EmptyEmail(t *testing.T) {
 
 func TestBook_Return_Success(t *testing.T) {
 	book := createTestBook()
-	book.Borrow("john@example.com", time.Now())
+	_ = book.Borrow("john@example.com", time.Now())
 	book.ClearEvents() // Clear borrow event
 	
 	err := book.Return()

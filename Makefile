@@ -65,8 +65,8 @@ test-coverage: ## Run tests with coverage
 
 .PHONY: lint
 lint: ## Run linter
-	@which golangci-lint > /dev/null || go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
-	golangci-lint run
+	@command -v golangci-lint > /dev/null 2>&1 || go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
+	$(shell go env GOPATH)/bin/golangci-lint run
 
 # =============================================================================
 # Database

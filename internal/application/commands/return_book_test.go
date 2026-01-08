@@ -16,8 +16,8 @@ func TestReturnBookHandler_Success(t *testing.T) {
 	title, _ := catalog.NewTitle("Clean Code")
 	author, _ := catalog.NewAuthor("Robert Martin")
 	book := catalog.NewBook(id, title, author)
-	book.Borrow("john@example.com", time.Now())
-	repo.Add(context.Background(), book)
+	_ = book.Borrow("john@example.com", time.Now())
+	_ = repo.Add(context.Background(), book)
 
 	handler := NewReturnBookHandler(repo)
 	ctx := context.Background()
@@ -62,7 +62,7 @@ func TestReturnBookHandler_NotBorrowed(t *testing.T) {
 	title, _ := catalog.NewTitle("Clean Code")
 	author, _ := catalog.NewAuthor("Robert Martin")
 	book := catalog.NewBook(id, title, author)
-	repo.Add(context.Background(), book)
+	_ = repo.Add(context.Background(), book)
 
 	handler := NewReturnBookHandler(repo)
 	ctx := context.Background()

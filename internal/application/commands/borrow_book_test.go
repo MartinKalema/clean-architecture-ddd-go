@@ -16,7 +16,7 @@ func TestBorrowBookHandler_Success(t *testing.T) {
 	title, _ := catalog.NewTitle("Clean Code")
 	author, _ := catalog.NewAuthor("Robert Martin")
 	book := catalog.NewBook(id, title, author)
-	repo.Add(context.Background(), book)
+	_ = repo.Add(context.Background(), book)
 
 	handler := NewBorrowBookHandler(repo)
 	ctx := context.Background()
@@ -78,8 +78,8 @@ func TestBorrowBookHandler_AlreadyBorrowed(t *testing.T) {
 	title, _ := catalog.NewTitle("Clean Code")
 	author, _ := catalog.NewAuthor("Robert Martin")
 	book := catalog.NewBook(id, title, author)
-	book.Borrow("first@example.com", time.Now())
-	repo.Add(context.Background(), book)
+	_ = book.Borrow("first@example.com", time.Now())
+	_ = repo.Add(context.Background(), book)
 
 	handler := NewBorrowBookHandler(repo)
 	ctx := context.Background()
