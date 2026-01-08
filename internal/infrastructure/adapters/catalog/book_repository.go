@@ -22,29 +22,35 @@ type bookRow struct {
 	Version       int
 }
 
-// BookRepository implements catalog.BookRepository
+// BookRepository implements catalog.BookRepository with read/write splitting.
 type BookRepository struct {
-	pool *pgxpool.Pool
+	writer *pgxpool.Pool // Primary for writes
+	reader *pgxpool.Pool // Replica for reads
 }
 
 // NewBookRepository creates a new repository.
-func NewBookRepository(pool *pgxpool.Pool) *BookRepository {
-	return &BookRepository{pool: pool}
+// writer: pool for write operations (primary)
+// reader: pool for read operations (replica, can be same as writer if no replicas)
+func NewBookRepository(writer, reader *pgxpool.Pool) *BookRepository {
+	return &BookRepository{
+		writer: writer,
+		reader: reader,
+	}
 }
 
-// Add inserts a new book
+// Add inserts a new book (WRITE → Primary)
 func (r *BookRepository) Add(ctx context.Context, book *catalog.Book) error {
-	_, err := r.pool.Exec(
+	_, err := r.writer.Exec(
 		ctx, `INSERT INTO books (id, title, author, is_borrowed, borrowed_at, return_due_date, version)
   		VALUES ($1, $2, $3, $4, $5, $6, $7)`, book.ID().String(), book.Title().String(), book.Author().String(), book.IsBorrowed(), nil, nil, book.Version(),
 	)
 	return err
 }
 
-// GetByID fetches a book by ID
+// GetByID fetches a book by ID (READ → Replica)
 func (r *BookRepository) GetByID(ctx context.Context, id catalog.BookID) (*catalog.Book, error) {
 	var row bookRow
-	err := r.pool.QueryRow(ctx, `
+	err := r.reader.QueryRow(ctx, `
 		SELECT id, title, author, is_borrowed, borrowed_at, return_due_date, version
 		FROM books WHERE id = $1
 	`, id.String()).Scan(
@@ -60,9 +66,9 @@ func (r *BookRepository) GetByID(ctx context.Context, id catalog.BookID) (*catal
 	return rowToBook(row)
 }
 
-// List fetches books with pagination
+// List fetches books with pagination (READ → Replica)
 func (r *BookRepository) List(ctx context.Context, limit, offset int) ([]*catalog.Book, error) {
-	rows, err := r.pool.Query(ctx, `
+	rows, err := r.reader.Query(ctx, `
 		SELECT id, title, author, is_borrowed, borrowed_at, return_due_date, version
 		FROM books
 		ORDER BY created_at DESC
@@ -91,16 +97,16 @@ func (r *BookRepository) List(ctx context.Context, limit, offset int) ([]*catalo
 	return books, rows.Err()
 }
 
-// Count returns total number of books
+// Count returns total number of books (READ → Replica)
 func (r *BookRepository) Count(ctx context.Context) (int, error) {
 	var count int
-	err := r.pool.QueryRow(ctx, `SELECT COUNT(*) FROM books`).Scan(&count)
+	err := r.reader.QueryRow(ctx, `SELECT COUNT(*) FROM books`).Scan(&count)
 	return count, err
 }
 
-// Update updates an existing book
+// Update updates an existing book (WRITE → Primary)
 func (r *BookRepository) Update(ctx context.Context, book *catalog.Book) error {
-	_, err := r.pool.Exec(ctx, `
+	_, err := r.writer.Exec(ctx, `
 		UPDATE books
 		SET title = $2, author = $3, is_borrowed = $4, borrowed_at = $5, return_due_date = $6, version = version + 1
 		WHERE id = $1
@@ -109,9 +115,9 @@ func (r *BookRepository) Update(ctx context.Context, book *catalog.Book) error {
 	return err
 }
 
-// Remove deletes a book
+// Remove deletes a book (WRITE → Primary)
 func (r *BookRepository) Remove(ctx context.Context, id catalog.BookID) error {
-	_, err := r.pool.Exec(ctx, `DELETE FROM books WHERE id = $1`, id.String())
+	_, err := r.writer.Exec(ctx, `DELETE FROM books WHERE id = $1`, id.String())
 	return err
 }
 
